@@ -20,7 +20,7 @@ module.exports = function validateRegisterInput(data) {
   if (validator.isEmpty(data.email)) {
     errors.email = "Email  is required";
   }
-  if (validator.isEmail(data.email)) {
+  if (!validator.isEmail(data.email)) {
     errors.email = "Email is Invalid";
   }
 
@@ -36,7 +36,7 @@ module.exports = function validateRegisterInput(data) {
     errors.password2 = "Password2 field is required";
   }
 
-  if (validator.equals(data.password, data.password2)) {
+  if (!validator.equals(data.password, data.password2)) {
     errors.password2 = "Passwords must match";
   }
 

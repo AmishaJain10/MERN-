@@ -12,7 +12,7 @@ var b = async function(workName, callback) {
   console.log("I am working on:" + workName);
   console.log("I completed my work");
   console.log("------------------------------------");
-  await sleep(5000);
+  await sleep(1000);
   callback(workName + " completed");
   console.log("------------------------------------");
 };

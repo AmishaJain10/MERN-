@@ -3,6 +3,9 @@ const router = express.Router();
 const mongoose = require("mongoose"); // to deal with database
 const passport = require("passport"); //for protected routes
 
+//load validation
+const validateProfileInput = require("../../validation/profile");
+
 //load profile and user model
 const Profile = require("../../models/Profile");
 const User = require("../../models/User");
@@ -22,6 +25,7 @@ router.get(
     const errors = {};
 
     Profile.findOne({ user: req.user.id })
+      .populate("user", ["name", "avatar"])
       .then(profile => {
         if (!profile) {
           errors.noprofile = "There is no profile for this user";
@@ -36,11 +40,18 @@ router.get(
 //@route POST api/profile
 //@des Create or Edit User profile
 //@access private
-router.get(
+router.post(
   "/",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    const errors = {};
+    const { errors, isValid } = validateProfileInput(req.body);
+
+    //check validation
+    if (!isValid) {
+      //return any error with 400 status
+      return res.status(400).json(errors);
+    }
+
     //Get Fields
     const profileFields = {};
     profileFields.user = req.user.id;
@@ -65,7 +76,7 @@ router.get(
     if (req.body.linkedin) profileFields.social.linkedin = req.body.linkedin;
     if (req.body.instagram) profileFields.social.instagram = req.body.instagram;
 
-    profile.findOne({ user: req.user.id }).then(profile => {
+    Profile.findOne({ user: req.user.id }).then(profile => {
       if (profile) {
         //update
         Profile.findOneAndUpdate(
@@ -77,7 +88,7 @@ router.get(
         //Create
 
         //CHeck if handle exists
-        profile.findOne({ handle: profileFields.handle }).then(profile => {
+        Profile.findOne({ handle: profileFields.handle }).then(profile => {
           if (profile) {
             errors.handle = "That handle already exists";
             res.status(400).json(errors);
