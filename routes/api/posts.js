@@ -67,23 +67,87 @@ router.delete(
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     Profile.findOne({ user: req.user.id }).then(profile => {
-      Post.findById(req.params.id).then(post => {
-        //check for post owner
-        if (post.user.toString() !== req.user.id) {
-          return res.status(401).json({
-            notAuthorize: "User is not authorized to delete this post"
-          });
-        }
+      Post.findById(req.params.id)
+        .then(post => {
+          //check for post owner
+          if (post.user.toString() !== req.user.id) {
+            return res.status(401).json({
+              notAuthorize: "User is not authorized to delete this post"
+            });
+          }
 
-        //Delete
-        post
-          .remove()
-          .then(() => res.json({ success: true }))
-          .catch(err =>
-            res.status(404).json({ postnotfound: "No post found" })
-          );
-      });
+          //Delete
+          post.remove().then(() => res.json({ success: true }));
+        })
+        .catch(err => res.status(404).json({ postnotfound: "No post found" }));
     });
   }
 );
+
+//@route Post api/posts/like/:id
+//@desc Like post
+//@access private
+router.post(
+  "/like/:id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      Post.findById(req.params.id)
+        .then(post => {
+          if (
+            post.like.filter(l => l.user.toString() === req.user.id).length > 0
+          ) {
+            return res
+              .status(400)
+              .json({ alreadyliked: "user already liked this post" });
+          }
+
+          //Add user id to liked array
+          post.like.unshift({ user: req.user.id });
+          post.save().then(post => res.json(post));
+        })
+        .catch(err =>
+          res.status(404).json({ error: err, postnotfound: "No post found" })
+        );
+    });
+  }
+);
+
+//@route Post api/posts/unlike/:id
+//@desc unLike post
+//@access private
+router.post(
+  "/unlike/:id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      Post.findById(req.params.id)
+        .then(post => {
+          if (
+            post.like.filter(l => l.user.toString() === req.user.id).length ===
+            0
+          ) {
+            return res
+              .status(400)
+              .json({ notliked: "You have not liked this post" });
+          }
+
+          //get remove index
+          const removeIndex = post.like
+            .map(item => item.user.toString())
+            .indexOf(req.user.id);
+
+          //splice out of array
+          post.like.splice(removeIndex, 1);
+
+          //save
+          post.save().then(post => res.json(post));
+        })
+        .catch(err =>
+          res.status(404).json({ error: err, postnotfound: "No post found" })
+        );
+    });
+  }
+);
+
 module.exports = router;
