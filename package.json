@@ -4,8 +4,11 @@
   "description": "developer social network",
   "main": "server.js",
   "scripts": {
+    "client-start": "npm install --prefix client",
     "start": "node server.js",
-    "server": "nodemon server.js"
+    "server": "nodemon server.js",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "author": "Amisha",
   "license": "ISC",
