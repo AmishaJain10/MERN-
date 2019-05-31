@@ -33,7 +33,7 @@ const TextFiefldGroup = ({
   );
 };
 
-TextFiefldGroup.PropTypes = {
+TextFiefldGroup.propTypes = {
   name: PropTypes.string.isRequired,
   placeholder: PropTypes.string,
   value: PropTypes.string.isRequired,
