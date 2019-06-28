@@ -16,10 +16,17 @@ app.use(bodyParser.json());
 
 //DB config
 const db = require("./config/keys").mongoURI;
+const dbOptions = {
+  useNewUrlParser: true,
+  auth: {
+    user: require("./config/keys").mongoUser,
+    password: require("./config/keys").mongoPassword
+  }
+};
 
 //connect to MongoDB
 mongoose
-  .connect(db)
+  .connect(db, dbOptions)
   .then(() => console.log("Mongo DB connected"))
   .catch(err => console.log(err));
 
